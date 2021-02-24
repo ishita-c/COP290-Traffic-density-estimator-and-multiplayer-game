@@ -44,7 +44,7 @@ int main(int argc, char* argv[]){
 	Mat croppedImg=im_out(crop_region);
 	imshow("crop", croppedImg);
 	waitKey(0);
-	bool check1 = imwrite("transformed.jpg", croppedImg);
+	bool check1 = imwrite("transformed.jpg", im_out);
 	if (!check1) {printf("unable to save transformed image\n");return -1;}
 	printf("Transformed image saved \n");
 	bool check2 = imwrite("cropped.jpg", croppedImg);
