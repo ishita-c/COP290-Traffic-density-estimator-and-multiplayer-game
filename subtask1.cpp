@@ -14,9 +14,9 @@ void CallBackFunc(int event,int x,int y,int flags,void* userdata){
 	}
 }
 
-int main(int argc, char** argv){
+int main(int argc, char* argv[]){
 	Mat cimage,image;
-	cimage= imread("traffic.jpg");
+	cimage= imread(argv[1]);
 	cvtColor(cimage, image, cv::COLOR_BGR2GRAY);
 	putText(image, "Select 4 points which are the corners of road of interest in correct order TL TR BR BL", Point(5,100), FONT_HERSHEY_DUPLEX, 1, Scalar(0,143,143), 2);
 	if (image.empty()){cout<<"error loading image"<<endl;return -1;}
