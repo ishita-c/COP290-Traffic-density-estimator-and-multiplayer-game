@@ -16,7 +16,7 @@ void CallBackFunc(int event,int x,int y,int flags,void* userdata){
 
 int main(int argc, char** argv){
 	Mat image;
-	image= imread("empty.jpg");
+	image= imread("traffic.jpg");
 	if (image.empty()){cout<<"error loading image"<<endl;return -1;}
 	namedWindow("Img",1);
 	setMouseCallback("Img",CallBackFunc,NULL);
@@ -34,6 +34,9 @@ int main(int argc, char** argv){
 	warpPerspective(image, im_out, hom, image.size());
 	imshow("Img", image);
 	imshow("Output image", im_out);
+	cv::Rect crop_region(472, 52, 328, 778);
+	Mat croppedImg=im_out(crop_region);
+	imshow("crop", croppedImg);
 	waitKey(0);
 	
 	//return 0;	
