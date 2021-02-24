@@ -18,6 +18,7 @@ int main(int argc, char* argv[]){
 	if (argc!=2){printf("Please try again with Image file name as argument (example ./sub1 Image.jpg)\n");return -1;}
 	Mat cimage,image;
 	cimage= imread(argv[1]);
+	if (cimage.empty()){printf("Unable to open input image\n");return -1;}
 	cvtColor(cimage, image, cv::COLOR_BGR2GRAY);
 	putText(image, "Select 4 points which are the corners of road of interest in correct order TL TR BR BL", Point(5,100), FONT_HERSHEY_DUPLEX, 1, Scalar(0,143,143), 2);
 	putText(image, "Press any key to carry on (not power key ofc)", Point(5,125), FONT_HERSHEY_DUPLEX, 1, Scalar(0,143,143), 2);
