@@ -1,5 +1,11 @@
-#include "opencv2/opencv.hpp"
 #include <iostream>
+#include <sstream>
+#include "opencv2/opencv.hpp"
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/video.hpp>
 
 using namespace std;
 using namespace cv;
@@ -16,6 +22,9 @@ int main(){
     return -1;
     
   }
+  Mat fgmask,fgmask2;
+  Ptr<BackgroundSubtractor> pBackSub1 = createBackgroundSubtractorMOG2(false);
+  Ptr<BackgroundSubtractor> pBackSub2 = createBackgroundSubtractorMOG2(false);
   vector<Point2f> set_1;
     	set_1.push_back(Point2f(971,235));
 	set_1.push_back(Point2f(1275,234));
@@ -26,14 +35,19 @@ int main(){
 	set_2.push_back(Point2f(800, 52));
 	set_2.push_back(Point2f(800, 830));
 	set_2.push_back(Point2f(472, 830));
-	
-	Mat hom=findHomography(set_1, set_2);
+  Mat image,background;
+  image= imread("background.jpg");
+  cvtColor(image, background, cv::COLOR_BGR2GRAY);
+  pBackSub2->apply(background, fgmask2,0);
+		
+  Mat hom=findHomography(set_1, set_2);
   int i=0;	
   while(1){
 
-    Mat frame;
+    Mat cframe,frame;
     // Capture frame-by-frame
-    cap >> frame;
+    cap >> cframe;
+    cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
     
  
     // If the frame is empty, break immediately
@@ -47,6 +61,10 @@ int main(){
     Mat croppedImg=im_out(crop_region);
     // Display the resulting frame
     imshow( "Frame", croppedImg);
+    pBackSub1->apply(croppedImg, fgmask);
+    pBackSub2->apply(croppedImg, fgmask2,0);
+    imshow("MaskDynamic",fgmask);
+    imshow("MaskStatic",fgmask2);
     
     i++;
 
