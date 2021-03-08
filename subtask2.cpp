@@ -6,6 +6,7 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/video.hpp>
+#include <fstream>
 
 using namespace std;
 using namespace cv;
@@ -20,8 +21,8 @@ int main(){
   if(!cap.isOpened()){
     cout << "Error opening video stream or file" << endl;
     return -1;
-    
   }
+  ofstream output("output.txt");
   Mat fgmask,fgmask2;
   Ptr<BackgroundSubtractor> pBackSub1 = createBackgroundSubtractorMOG2(false);
   Ptr<BackgroundSubtractor> pBackSub2 = createBackgroundSubtractorMOG2(false);
@@ -42,18 +43,17 @@ int main(){
 		
   Mat hom=findHomography(set_1, set_2);
   int i=0;	
-  while(1){
+  //video has 5730 frames, fpsXduration
+  while(i<5730){
 
     Mat cframe,frame;
     // Capture frame-by-frame
     cap >> cframe;
     cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
-    
  
     // If the frame is empty, break immediately
     if (frame.empty())
       break;
-
     
     Mat im_out;
     warpPerspective(frame, im_out, hom, frame.size());
@@ -66,14 +66,27 @@ int main(){
     imshow("MaskDynamic",fgmask);
     imshow("MaskStatic",fgmask2);
     
-    i++;
-
+    
+    int TotalPixelsq = fgmask2.rows * fgmask2.cols;
+    int notblackPixelsq = countNonZero(fgmask2);
+    double qdensity = (double)notblackPixelsq/(double)TotalPixelsq;
+	
+    int TotalPixels = fgmask.rows * fgmask.cols;
+    int notblackPixels = countNonZero(fgmask);
+    double dynadensity = (double)notblackPixels/(double)TotalPixels;
+    
+    output << i<< ","<< qdensity<< ","<< dynadensity<< endl;
+    
+    
+    
+    i=i+3;
+    
     // Press  ESC on keyboard to exit
     char c=(char)waitKey(25);
     if(c==27)
       break;
   }
- 
+	output.close();
   // When everything done, release the video capture object
   cap.release();
 
