@@ -42,49 +42,52 @@ int main(){
   pBackSub2->apply(background, fgmask2,0);
 		
   Mat hom=findHomography(set_1, set_2);
-  int i=0;	
-  //video has 5730 frames, fpsXduration
-  while(i<5730){
-
-    Mat cframe,frame;
-    // Capture frame-by-frame
-    cap >> cframe;
-    cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
- 
-    // If the frame is empty, break immediately
-    if (frame.empty())
-      break;
-    
-    Mat im_out;
-    warpPerspective(frame, im_out, hom, frame.size());
-    cv::Rect crop_region(472, 52, 328, 778);
-    Mat croppedImg=im_out(crop_region);
-    // Display the resulting frame
-    imshow( "Frame", croppedImg);
-    pBackSub1->apply(croppedImg, fgmask);
-    pBackSub2->apply(croppedImg, fgmask2,0);
-    imshow("MaskDynamic",fgmask);
-    imshow("MaskStatic",fgmask2);
-    
-    
-    int TotalPixelsq = fgmask2.rows * fgmask2.cols;
-    int notblackPixelsq = countNonZero(fgmask2);
-    double qdensity = (double)notblackPixelsq/(double)TotalPixelsq;
-	
-    int TotalPixels = fgmask.rows * fgmask.cols;
-    int notblackPixels = countNonZero(fgmask);
-    double dynadensity = (double)notblackPixels/(double)TotalPixels;
-    
-    output << i<< ","<< qdensity<< ","<< dynadensity<< endl;
+  int i=0;
+  
+  while(1){
+			Mat cframe,frame;
+		  // Capture frame-by-frame
+		  cap >> cframe;
+		  cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
+	 
+		  // If the frame is empty, break immediately
+		  if (frame.empty())
+		    break;
+		  
+		  Mat im_out;
+		  warpPerspective(frame, im_out, hom, frame.size());
+		  cv::Rect crop_region(472, 52, 328, 778);
+		  Mat croppedImg=im_out(crop_region);
+		  // Display the resulting frame
+		  imshow( "Frame", croppedImg);
+		  pBackSub1->apply(croppedImg, fgmask);
+		  pBackSub2->apply(croppedImg, fgmask2,0);
+		  Mat q,d;
+		  threshold(fgmask2, q, 252, 255, 0);
+		  threshold(fgmask, d, 252, 255, 0);
+		  
+		  imshow("MaskDynamic",d);
+		  imshow("MaskStatic",q);
     
     
+		  int TotalPixelsq = q.rows * q.cols;
+		  int notblackPixelsq = countNonZero(q);
+		  double qdensity = (double)notblackPixelsq/(double)TotalPixelsq;
+		
+		  int TotalPixels = d.rows * d.cols;
+		  int notblackPixels = countNonZero(d);
+		  double dynadensity = (double)notblackPixels/(double)TotalPixels;
+		  double sec=(double)i/(double)5;
+		  output << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
+		  cap>>cframe;
+		  cap>>cframe;
     
-    i=i+3;
-    
-    // Press  ESC on keyboard to exit
-    char c=(char)waitKey(25);
-    if(c==27)
-      break;
+		  i++;
+		  
+		  // Press  ESC on keyboard to exit
+		  char c=(char)waitKey(25);
+		  if(c==27)
+		    break;
   }
 	output.close();
   // When everything done, release the video capture object
