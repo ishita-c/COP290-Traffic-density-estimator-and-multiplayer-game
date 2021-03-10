@@ -11,11 +11,11 @@
 using namespace std;
 using namespace cv;
 
-int main(){
+int main(int argc, char* argv[]){
 
   // Create a VideoCapture object and open the input file
   // If the input is the web camera, pass 0 instead of the video file name
-  VideoCapture cap("trafficvideo.mp4"); 
+  VideoCapture cap(argv[1]); 
    
   // Check if camera opened successfully
   if(!cap.isOpened()){
@@ -62,8 +62,8 @@ int main(){
 		  pBackSub1->apply(croppedImg, fgmask,-1);
 		  pBackSub2->apply(croppedImg, fgmask2,0);
 		  Mat q,d;
-		  threshold(fgmask2, q, 252, 255, 0);
-		  threshold(fgmask, d, 252, 255, 0);
+		  threshold(fgmask2, q, 250, 255, 0); //removing shadows
+		  threshold(fgmask, d, 250, 255, 0);
 		  
 		  imshow("MaskDynamic",d);
 		  imshow("MaskStatic",q);
@@ -76,7 +76,9 @@ int main(){
 		  int TotalPixels = d.rows * d.cols;
 		  int notblackPixels = countNonZero(d);
 		  double dynadensity = (double)notblackPixels/(double)TotalPixels;
-		  double sec=(double)i/(double)5;
+		  
+		  double sec=(double)i/(double)5; //processing at 5fps
+		  
 		  output << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
 		  cout << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
 		  cap>>cframe;
