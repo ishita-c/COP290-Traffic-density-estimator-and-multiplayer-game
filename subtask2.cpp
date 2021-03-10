@@ -43,24 +43,23 @@ int main(){
 		
   Mat hom=findHomography(set_1, set_2);
   int i=0;
-  
+  Mat cframe,frame;
   while(1){
-			Mat cframe,frame;
+		  
 		  // Capture frame-by-frame
 		  cap >> cframe;
-		  cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
-	 
 		  // If the frame is empty, break immediately
-		  if (frame.empty())
+		  if (cframe.empty())
 		    break;
-		  
+		  cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
 		  Mat im_out;
 		  warpPerspective(frame, im_out, hom, frame.size());
 		  cv::Rect crop_region(472, 52, 328, 778);
 		  Mat croppedImg=im_out(crop_region);
 		  // Display the resulting frame
+		  putText(croppedImg, "Press Esc to exit", Point(5,25),FONT_HERSHEY_DUPLEX, 0.5, Scalar(0,143,143), 0.7);
 		  imshow( "Frame", croppedImg);
-		  pBackSub1->apply(croppedImg, fgmask);
+		  pBackSub1->apply(croppedImg, fgmask,-1);
 		  pBackSub2->apply(croppedImg, fgmask2,0);
 		  Mat q,d;
 		  threshold(fgmask2, q, 252, 255, 0);
@@ -79,8 +78,13 @@ int main(){
 		  double dynadensity = (double)notblackPixels/(double)TotalPixels;
 		  double sec=(double)i/(double)5;
 		  output << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
+		  cout << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
 		  cap>>cframe;
+		  if (cframe.empty())
+		    break;
 		  cap>>cframe;
+		  if (cframe.empty())
+		    break;
     
 		  i++;
 		  
@@ -90,6 +94,7 @@ int main(){
 		    break;
   }
 	output.close();
+	cout<<"Output saved in output.txt file"<<endl;
   // When everything done, release the video capture object
   cap.release();
 
