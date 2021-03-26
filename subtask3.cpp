@@ -7,13 +7,29 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/video.hpp>
 #include <fstream>
+#include <pthread.hpp>
 
 using namespace std;
 using namespace cv;
-Ptr<BackgroundSubtractor> pBackSub1 = createBackgroundSubtractorMOG2(false);
-Ptr<BackgroundSubtractor> pBackSub2 = createBackgroundSubtractorMOG2(false);
-Ptr<BackgroundSubtractor> pBackSub3 = createBackgroundSubtractorMOG2(false);
-Ptr<BackgroundSubtractor> pBackSub4 = createBackgroundSubtractorMOG2(false);
+
+Ptr<BackgroundSubtractor> pBackSubList[4];
+pBackSubList[0] = createBackgroundSubtractorMOG2(false);  //pBackSub1
+pBackSubList[1] = createBackgroundSubtractorMOG2(false);  //pBackSub2
+pBackSubList[2] = createBackgroundSubtractorMOG2(false);  //pBackSub3
+pBackSubList[3] = createBackgroundSubtractorMOG2(false);  //pBackSub4
+
+
+struct parameters{
+	Mat croppedImage;
+	Mat fgmask;
+	string name;
+	Ptr<BackgroundSubtractor> pBackSub;
+	parameters(){} //default contructor
+	parameters(Mat my_croppedImage, Mat my_fgmask, string my_name, Ptr<BackgroundSubtractor> my_pBackSub){
+		croppedImage=my_croppedImage; fgmask=my_fgmask; name=my_name; pBackSub=my_pBackSub;
+	}
+};
+
 Mat processframe(Mat cframe,Mat fgmask2,string m,Ptr<BackgroundSubtractor> pBackSub2){
 	Mat frame;
   	cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
@@ -30,6 +46,8 @@ Mat processframe(Mat cframe,Mat fgmask2,string m,Ptr<BackgroundSubtractor> pBack
 	  imshow(m,q);
 	  return q;
 }
+
+
 int main(int argc, char* argv[]){
 
   // Create a VideoCapture object and open the input file
@@ -67,9 +85,9 @@ int main(int argc, char* argv[]){
   cv::Rect crop_region2(636, 52, 164, 389);
   cv::Rect crop_region3(472, 441, 164, 389);
   cv::Rect crop_region4(636, 441, 164, 389);
-  cv::Rect crop_region(0,0,164,389);
+  cv::Rect back_region(0,0,164,389);
   cv::Rect back_region2(164,0,164,389);
-  Mat background1=background(crop_region);
+  Mat background1=background(back_region);
   Mat background2=background(back_region2);
   /*Mat background3=background(crop_region3);
   Mat background4=background(crop_region4);*/
@@ -77,8 +95,8 @@ int main(int argc, char* argv[]){
   resize(background2, background2, cv::Size(background2.cols * 0.5,background2.rows * 0.5), 0, 0, cv::INTER_LINEAR);
   /*resize(background3, background3, cv::Size(background3.cols * 0.5,background3.rows * 0.5), 0, 0, cv::INTER_LINEAR);
   resize(background4, background4, cv::Size(background4.cols * 0.5,background4.rows * 0.5), 0, 0, cv::INTER_LINEAR);*/
-  pBackSub1->apply(background1, fgmask2,0);
-  pBackSub2->apply(background2,fgmask2,0);
+  pBackSubList[0]->apply(background1, fgmask2,0);
+  pBackSubList[1]->apply(background2,fgmask2,0);
   Mat hom=findHomography(set_1, set_2);
   int i=0;
   Mat cframe;
@@ -94,18 +112,32 @@ int main(int argc, char* argv[]){
 	  		warpPerspective(cframe, im_out, hom, cframe.size());
 	  		//cv::Rect crop_region(472, 52, 328, 778);
 	  		//Mat croppedImg=im_out(crop_region);
-		    	Mat croppedImg1=im_out(crop_region1);
-		    	Mat croppedImg2=im_out(crop_region2);
-		    	Mat croppedImg3=im_out(crop_region3);
-		    	Mat croppedImg4=im_out(crop_region4);
+	  		
+	  		Mat croppedImgList[4]; 
+	  		
+		    	croppedImgList[0]=im_out(crop_region1);  //croppedImg1
+		    	croppedImgList[1]=im_out(crop_region2);  //croppedImg2
+		    	croppedImgList[2]=im_out(crop_region3);  //croppedImg3
+		    	croppedImgList[3]=im_out(crop_region4);  //croppedImg4
 		    
-		  Mat q1=processframe(croppedImg1,fgmask2,"Makestatic1",pBackSub1);
-		  Mat q2=processframe(croppedImg2,fgmask2,"Makestatic2",pBackSub2);
-		  Mat q3=processframe(croppedImg3,fgmask2,"Makestatic3",pBackSub3);
-		  Mat q=processframe(croppedImg4,fgmask2,"Makestatic4",pBackSub4);
+		   
+		 
+		  Mat q1=processframe(croppedImgList[0],fgmask2,"Makestatic1",pBackSubList[0]);
+		  Mat q2=processframe(croppedImgList[1],fgmask2,"Makestatic2",pBackSubList[1]);
+		  Mat q3=processframe(croppedImgList[2],fgmask2,"Makestatic3",pBackSubList[2]);
+		  Mat q=processframe(croppedImgList[4],fgmask2,"Makestatic4",pBackSubList[3]);
 		  //Mat q=processframe(croppedImg,fgmask2);
     
-    
+    		  pthread_t threads[4];
+    		  for (int i=0; i<4; i++){
+    		  	int p = pthread_create(&threads[i], NULL, processframe, (void*)parameters(croppedImgList[i], fgmask2, "Makestatic"+to_string(i+1), pBackSubList[i]));
+    		  }
+    		  //until all threads are complete
+    		  for (int i=0; i<4; i++){
+    		  	pthread_join(threads[i], NULL);
+    		  }
+    		  
+    		  
 		  int TotalPixelsq = q.rows * q.cols;
 		  int notblackPixelsq = countNonZero(q);
 		  double qdensity = (double)notblackPixelsq/(double)TotalPixelsq;
