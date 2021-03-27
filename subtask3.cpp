@@ -7,32 +7,32 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/video.hpp>
 #include <fstream>
-#include <pthread.hpp>
+#include <pthread.h>
 
 using namespace std;
 using namespace cv;
 
 Ptr<BackgroundSubtractor> pBackSubList[4];
-pBackSubList[0] = createBackgroundSubtractorMOG2(false);  //pBackSub1
-pBackSubList[1] = createBackgroundSubtractorMOG2(false);  //pBackSub2
-pBackSubList[2] = createBackgroundSubtractorMOG2(false);  //pBackSub3
-pBackSubList[3] = createBackgroundSubtractorMOG2(false);  //pBackSub4
+
 
 
 struct parameters{
 	Mat croppedImage;
 	Mat fgmask;
 	string name;
+	int i;
 	Ptr<BackgroundSubtractor> pBackSub;
 	parameters(){} //default contructor
-	parameters(Mat my_croppedImage, Mat my_fgmask, string my_name, Ptr<BackgroundSubtractor> my_pBackSub){
-		croppedImage=my_croppedImage; fgmask=my_fgmask; name=my_name; pBackSub=my_pBackSub;
+	parameters(Mat my_croppedImage, Mat my_fgmask,int my_i, string my_name, Ptr<BackgroundSubtractor> my_pBackSub){
+		croppedImage=my_croppedImage; fgmask=my_fgmask;i=my_i; name=my_name; pBackSub=my_pBackSub;
 	}
 };
+Mat q[4];
 
-Mat processframe(Mat cframe,Mat fgmask2,string m,Ptr<BackgroundSubtractor> pBackSub2){
+void *processframe(void* p1){
+	struct parameters* p=(struct parameters *) p1;
 	Mat frame;
-  	cvtColor(cframe, frame, cv::COLOR_BGR2GRAY);
+  	cvtColor(p->croppedImage, frame, cv::COLOR_BGR2GRAY);
 	  
 	  // Display the resulting frame
 	  //putText(frame, "Press Esc to exit", Point(5,25),FONT_HERSHEY_DUPLEX, 1, Scalar(0,143,143), 0.7);
@@ -40,11 +40,9 @@ Mat processframe(Mat cframe,Mat fgmask2,string m,Ptr<BackgroundSubtractor> pBack
 	  resize(frame, frame, cv::Size(frame.cols * 0.5,frame.rows * 0.5), 0, 0, cv::INTER_LINEAR); //decreasing resolution
 	  
 	  imshow( "Frame", frame);
-	  pBackSub2->apply(frame, fgmask2,0);
-	  Mat q;
-	  threshold(fgmask2, q, 250, 255, 0); //removing shadows  
-	  imshow(m,q);
-	  return q;
+	  p->pBackSub->apply(frame, p->fgmask,0);
+	  threshold(p->fgmask, q[p->i], 250, 255, 0); //removing shadows  
+	  imshow(p->name,q[p->i]);
 }
 
 
@@ -95,6 +93,10 @@ int main(int argc, char* argv[]){
   resize(background2, background2, cv::Size(background2.cols * 0.5,background2.rows * 0.5), 0, 0, cv::INTER_LINEAR);
   /*resize(background3, background3, cv::Size(background3.cols * 0.5,background3.rows * 0.5), 0, 0, cv::INTER_LINEAR);
   resize(background4, background4, cv::Size(background4.cols * 0.5,background4.rows * 0.5), 0, 0, cv::INTER_LINEAR);*/
+  pBackSubList[0] = createBackgroundSubtractorMOG2(false);  //pBackSub1
+  pBackSubList[1] = createBackgroundSubtractorMOG2(false);  //pBackSub2
+  pBackSubList[2] = createBackgroundSubtractorMOG2(false);  //pBackSub3
+  pBackSubList[3] = createBackgroundSubtractorMOG2(false);  //pBackSub4
   pBackSubList[0]->apply(background1, fgmask2,0);
   pBackSubList[1]->apply(background2,fgmask2,0);
   Mat hom=findHomography(set_1, set_2);
@@ -122,15 +124,16 @@ int main(int argc, char* argv[]){
 		    
 		   
 		 
-		  Mat q1=processframe(croppedImgList[0],fgmask2,"Makestatic1",pBackSubList[0]);
+		  /*Mat q1=processframe(croppedImgList[0],fgmask2,"Makestatic1",pBackSubList[0]);
 		  Mat q2=processframe(croppedImgList[1],fgmask2,"Makestatic2",pBackSubList[1]);
 		  Mat q3=processframe(croppedImgList[2],fgmask2,"Makestatic3",pBackSubList[2]);
-		  Mat q=processframe(croppedImgList[4],fgmask2,"Makestatic4",pBackSubList[3]);
+		  Mat q=processframe(croppedImgList[4],fgmask2,"Makestatic4",pBackSubList[3]);*/
 		  //Mat q=processframe(croppedImg,fgmask2);
     
     		  pthread_t threads[4];
     		  for (int i=0; i<4; i++){
-    		  	int p = pthread_create(&threads[i], NULL, processframe, (void*)parameters(croppedImgList[i], fgmask2, "Makestatic"+to_string(i+1), pBackSubList[i]));
+    		  	struct parameters pt=parameters(croppedImgList[i], fgmask2,i, "Makestatic"+to_string(i+1), pBackSubList[i]);
+    		  	int p = pthread_create(&threads[i], NULL, processframe, (void*)&pt);
     		  }
     		  //until all threads are complete
     		  for (int i=0; i<4; i++){
@@ -138,8 +141,8 @@ int main(int argc, char* argv[]){
     		  }
     		  
     		  
-		  int TotalPixelsq = q.rows * q.cols;
-		  int notblackPixelsq = countNonZero(q);
+		  int TotalPixelsq = q[0].rows * q[0].cols;
+		  int notblackPixelsq = countNonZero(q[0]);
 		  double qdensity = (double)notblackPixelsq/(double)TotalPixelsq;
 		
 		  
