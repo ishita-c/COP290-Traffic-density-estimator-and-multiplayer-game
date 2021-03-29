@@ -84,7 +84,7 @@ int main(int argc, char* argv[]){
 		  output << sec<< ","<< qdensity<< endl;
 		  cout << sec<< ","<< qdensity<< endl;
 		  
-		  for (int i=0; i<prmtr; i++){
+		  for (int i=0; i<prmtr-1; i++){
 		  	cap>>cframe;
 		  	if (cframe.empty())
 		  		break;

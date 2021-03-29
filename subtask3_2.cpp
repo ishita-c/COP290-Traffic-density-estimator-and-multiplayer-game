@@ -18,8 +18,8 @@ int main(int argc, char* argv[]){
 
   // Create a VideoCapture object and open the input file
   // If the input is the web camera, pass 0 instead of the video file name
-  if (argc!=3){
-  cout<<"input as ./sub3 infilename parameter"<<endl;
+  if (argc!=4){
+  cout<<"input as ./sub3 infilename parameter1 parameter2"<<endl;
   return -1;
   }
   VideoCapture cap(argv[1]); 
@@ -30,11 +30,11 @@ int main(int argc, char* argv[]){
     return -1;
   }
   auto start = high_resolution_clock::now();
-  int prmtr=atoi(argv[2]);
-  float prmt=1/(float) prmtr;
+  float prmtr1=atof(argv[2]);
+  float prmtr2=atof(argv[3]);
   Mat fgmask2;
   Mat q;
-  ofstream output("output_m2_"+to_string(prmtr)+".txt");
+  ofstream output("output_m2_"+to_string(prmtr1)+"x"+to_string(prmtr2)+".txt");
   vector<Point2f> set_1;
     	set_1.push_back(Point2f(971,235));
 	set_1.push_back(Point2f(1275,234));
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
   cvtColor(image, background, cv::COLOR_BGR2GRAY);
   cv::Rect crop_region(472, 52, 328, 778);
   Ptr<BackgroundSubtractor> pBackSub2 = createBackgroundSubtractorMOG2(false);  //pBackSub4
-  resize(background, background, cv::Size(background.cols * prmt,background.rows * prmt), 0, 0, cv::INTER_LINEAR); //decreasing resolution
+  resize(background, background, cv::Size(prmtr1,prmtr2), 0, 0, cv::INTER_LINEAR); //decreasing resolution
   pBackSub2->apply(background, fgmask2,0);
   Mat hom=findHomography(set_1, set_2);
  
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]){
 	  		warpPerspective(cframe, frame, hom, cframe.size());
 	  		cvtColor(frame, im_out, cv::COLOR_BGR2GRAY);
 	  		Mat croppedImg=im_out(crop_region);
-	  		resize(croppedImg, croppedImg, cv::Size(croppedImg.cols * prmt,croppedImg.rows * prmt), 0, 0, cv::INTER_LINEAR); //decreasing resolution
+	  		resize(croppedImg, croppedImg, cv::Size(prmtr1,prmtr2), 0, 0, cv::INTER_LINEAR); //decreasing resolution
 	  		imshow("frame",croppedImg);
 	  		pBackSub2->apply(croppedImg,fgmask2,0);
 	  		threshold(fgmask2, q, 250, 255, 0); //removing shadows
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]){
   output<<duration.count();
   cout<<"time taken "<<duration.count()<<endl;
 	output.close();
-	cout<<"Output saved in output_m2_"+to_string(prmtr)+".txt file"<<endl;
+	cout<<"Output saved in output_m2_"+to_string(prmtr1)+"x"+to_string(prmtr2)+".txt file"<<endl;
   // When everything done, release the video capture object
   cap.release();
 
