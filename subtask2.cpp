@@ -6,10 +6,12 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/video.hpp>
+#include <chrono>
 #include <fstream>
 
 using namespace std;
 using namespace cv;
+using namespace  std::chrono;
 
 int main(int argc, char* argv[]){
 
@@ -22,7 +24,8 @@ int main(int argc, char* argv[]){
     cout << "Error opening video stream or file" << endl;
     return -1;
   }
-  ofstream output("output.txt");
+  auto start = high_resolution_clock::now();
+  ofstream output("benchmark.txt");
   Mat fgmask,fgmask2;
   Ptr<BackgroundSubtractor> pBackSub1 = createBackgroundSubtractorMOG2(false);
   Ptr<BackgroundSubtractor> pBackSub2 = createBackgroundSubtractorMOG2(false);
@@ -95,8 +98,12 @@ int main(int argc, char* argv[]){
 		  if(c==27)
 		    break;
   }
+  auto stop = high_resolution_clock::now();
+  auto duration = duration_cast<seconds>(stop - start);
+  output<<duration.count();
+  cout<<"time taken "<<duration.count()<<endl;
 	output.close();
-	cout<<"Output saved in output.txt file"<<endl;
+	cout<<"Output saved in benchmark.txt file"<<endl;
   // When everything done, release the video capture object
   cap.release();
 
