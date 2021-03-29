@@ -11,6 +11,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace std::chrono;
 
 Ptr<BackgroundSubtractor> pBackSubList[4];
 
@@ -28,21 +29,25 @@ struct parameters{
 	}
 };
 Mat q[4];
+struct parameters  p[4];
 
 void *processframe(void* p1){
-	struct parameters* p=(struct parameters *) p1;
+	struct parameters* pt=(struct parameters *) p1;
+	struct parameters p =*pt;
 	Mat frame;
-  	cvtColor(p->croppedImage, frame, cv::COLOR_BGR2GRAY);
+	if(p.croppedImage.empty()){cout <<"empty input to thread\n";pthread_exit(NULL);}
+  	cvtColor(p.croppedImage, frame, cv::COLOR_BGR2GRAY);
 	  
 	  // Display the resulting frame
 	  //putText(frame, "Press Esc to exit", Point(5,25),FONT_HERSHEY_DUPLEX, 1, Scalar(0,143,143), 0.7);
 	  
 	  resize(frame, frame, cv::Size(frame.cols * 0.5,frame.rows * 0.5), 0, 0, cv::INTER_LINEAR); //decreasing resolution
 	  
-	  imshow( "Frame", frame);
-	  p->pBackSub->apply(frame, p->fgmask,0);
-	  threshold(p->fgmask, q[p->i], 250, 255, 0); //removing shadows  
-	  imshow(p->name,q[p->i]);
+	  //imshow( "Frame", frame);
+	  (p.pBackSub)->apply(frame, p.fgmask,0);
+	  threshold(p.fgmask, q[p.i], 250, 255, 0); //removing shadows  
+	  imshow(p.name,q[p.i]);
+	  pthread_exit(NULL);
 }
 
 
@@ -61,8 +66,8 @@ int main(int argc, char* argv[]){
     cout << "Error opening video stream or file" << endl;
     return -1;
   }
-  
-  
+Mat fgmask[4];
+Mat croppedImgList[4]; 
   
   ofstream output("output_t3.txt");
   Mat fgmask2;
@@ -78,6 +83,7 @@ int main(int argc, char* argv[]){
 	set_2.push_back(Point2f(472, 830));
   Mat image,background;
   image= imread("background.jpg");
+  if (image.empty()){cout<<"background not present \n";return -1;}
   cvtColor(image, background, cv::COLOR_BGR2GRAY);
   cv::Rect crop_region1(472, 52, 164, 389);
   cv::Rect crop_region2(636, 52, 164, 389);
@@ -97,9 +103,10 @@ int main(int argc, char* argv[]){
   pBackSubList[1] = createBackgroundSubtractorMOG2(false);  //pBackSub2
   pBackSubList[2] = createBackgroundSubtractorMOG2(false);  //pBackSub3
   pBackSubList[3] = createBackgroundSubtractorMOG2(false);  //pBackSub4
-  pBackSubList[0]->apply(background1, fgmask2,0);
-  pBackSubList[1]->apply(background2,fgmask2,0);
+  pBackSubList[0]->apply(background1, fgmask[0],0);
+  pBackSubList[1]->apply(background2,fgmask[1],0);
   Mat hom=findHomography(set_1, set_2);
+ 
   int i=0;
   Mat cframe;
   while(1){
@@ -115,14 +122,16 @@ int main(int argc, char* argv[]){
 	  		//cv::Rect crop_region(472, 52, 328, 778);
 	  		//Mat croppedImg=im_out(crop_region);
 	  		
-	  		Mat croppedImgList[4]; 
 	  		
 		    	croppedImgList[0]=im_out(crop_region1);  //croppedImg1
 		    	croppedImgList[1]=im_out(crop_region2);  //croppedImg2
 		    	croppedImgList[2]=im_out(crop_region3);  //croppedImg3
 		    	croppedImgList[3]=im_out(crop_region4);  //croppedImg4
 		    
-		   
+		    for (int i=0;i<4;i++){
+  			if(croppedImgList[i].empty()){cout<<"empty input to a thread";return -1;}
+  			p[i]=parameters(croppedImgList[i], fgmask[i],i, "Makestatic"+to_string(i+1), pBackSubList[i]);
+  			}
 		 
 		  /*Mat q1=processframe(croppedImgList[0],fgmask2,"Makestatic1",pBackSubList[0]);
 		  Mat q2=processframe(croppedImgList[1],fgmask2,"Makestatic2",pBackSubList[1]);
@@ -132,14 +141,13 @@ int main(int argc, char* argv[]){
     
     		  pthread_t threads[4];
     		  for (int i=0; i<4; i++){
-    		  	struct parameters pt=parameters(croppedImgList[i], fgmask2,i, "Makestatic"+to_string(i+1), pBackSubList[i]);
-    		  	int p = pthread_create(&threads[i], NULL, processframe, (void*)&pt);
+    		  	int p1 = pthread_create(&threads[i], NULL, processframe, &p[i]);
+    		  	if (p1){cout<<"unable to create thread";exit(-1);}
     		  }
     		  //until all threads are complete
     		  for (int i=0; i<4; i++){
     		  	pthread_join(threads[i], NULL);
     		  }
-    		  
     		  
 		  int TotalPixelsq = q[0].rows * q[0].cols;
 		  int notblackPixelsq = countNonZero(q[0]);
