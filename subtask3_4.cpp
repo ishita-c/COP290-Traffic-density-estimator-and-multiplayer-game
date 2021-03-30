@@ -68,7 +68,7 @@ int main(int argc, char* argv[]){
   Mat fgmask[numT];
   Mat croppedImgList[numT]; 
   Ptr<BackgroundSubtractor> pBackSubList[numT];
-  ofstream output("output_t3.txt");
+  ofstream output("output_m4_"+to_string(numT)+".txt");
   Mat fgmask2;
   vector<Point2f> set_1;
     	set_1.push_back(Point2f(971,235));
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]){
   	output<<duration.count();
   	cout<<"time taken "<<duration.count()<<endl;
 	output.close();
-	cout<<"Output saved in output_t3.txt file"<<endl;
+	cout<<"Output saved in output_m4_"+to_string(numT)+".txt file"<<endl;
   // When everything done, release the video capture object
   cap.release();
 
