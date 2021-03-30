@@ -79,7 +79,7 @@ int main(int argc, char* argv[]){
 		  double qdensity = (double)notblackPixelsq/(double)TotalPixelsq;
 		
 		  
-		  double sec=(double)i/(double)(15/prmtr); //processing at 5fps
+		  double sec=(double)i/(double)(15/(double)prmtr); //processing at 5fps
 		  
 		  output << sec<< ","<< qdensity<< endl;
 		  cout << sec<< ","<< qdensity<< endl;
