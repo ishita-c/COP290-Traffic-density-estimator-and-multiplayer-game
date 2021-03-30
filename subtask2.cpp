@@ -82,15 +82,19 @@ int main(int argc, char* argv[]){
 		  
 		  double sec=(double)i/(double)5; //processing at 5fps
 		  
+		  
+		  //output << sec<< ","<< qdensity<< endl; //for subtask3 analysis
 		  output << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
 		  cout << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
 		  cap>>cframe;
 		  if (cframe.empty())
 		    break;
+		  //output << sec<< ","<< qdensity<< endl; //for analysis of method1 subtask3
 		  cap>>cframe;
 		  if (cframe.empty())
 		    break;
-    
+		  //output << sec<< ","<< qdensity<< endl; //for analysis of method1 subtask3
+		  
 		  i++;
 		  
 		  // Press  ESC on keyboard to exit
