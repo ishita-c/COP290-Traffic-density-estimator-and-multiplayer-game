@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){
 		  cv::Rect crop_region(472, 52, 328, 778);
 		  Mat croppedImg=im_out(crop_region);
 		  // Display the resulting frame
-		  putText(croppedImg, "Press Esc to exit", Point(5,25),FONT_HERSHEY_DUPLEX, 0.5, Scalar(0,143,143), 0.7);
+		  //putText(croppedImg, "Press Esc to exit", Point(5,25),FONT_HERSHEY_DUPLEX, 0.5, Scalar(0,143,143), 0.7);
 		  imshow( "Frame", croppedImg);
 		  pBackSub1->apply(croppedImg, fgmask,-1);
 		  pBackSub2->apply(croppedImg, fgmask2,0);
@@ -82,19 +82,15 @@ int main(int argc, char* argv[]){
 		  
 		  double sec=(double)i/(double)5; //processing at 5fps
 		  
-		  
-		  //output << sec<< ","<< qdensity<< endl; //for subtask3 analysis
 		  output << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
 		  cout << sec<< ","<< qdensity<< ","<< dynadensity<< endl;
 		  cap>>cframe;
 		  if (cframe.empty())
 		    break;
-		  //output << sec<< ","<< qdensity<< endl; //for analysis of method1 subtask3
 		  cap>>cframe;
 		  if (cframe.empty())
 		    break;
-		  //output << sec<< ","<< qdensity<< endl; //for analysis of method1 subtask3
-		  
+    
 		  i++;
 		  
 		  // Press  ESC on keyboard to exit

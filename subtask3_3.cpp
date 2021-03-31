@@ -28,6 +28,8 @@ struct parameters{
 };
 Mat q[16];
 struct parameters  p[16];
+int TotalPixelsq =0;
+int notblackPixelsq =0;
 
 void *processframe(void* p1){
 	struct parameters* pt=(struct parameters *) p1;
@@ -42,6 +44,8 @@ void *processframe(void* p1){
 	  (p.pBackSub)->apply(frame, p.fgmask,0);
 	  threshold(p.fgmask, q[p.i], 250, 255, 0); //removing shadows  
 	  imshow(p.name,q[p.i]);
+	  TotalPixelsq = TotalPixelsq+q[p.i].rows * (q[p.i]).cols;
+	  notblackPixelsq= notblackPixelsq+ countNonZero(q[p.i]);
 	  pthread_exit(NULL);
 }
 
@@ -117,7 +121,8 @@ int main(int argc, char* argv[]){
   i=0;
   Mat cframe;
   while(1){
-		  
+		  TotalPixelsq =0;
+    		  notblackPixelsq =0;
 		  // Capture frame-by-frame
 		  cap >> cframe;
 		  // If the frame is empty, break immediately
@@ -144,12 +149,10 @@ int main(int argc, char* argv[]){
     		  for (int i=0; i<numT; i++){
     		  	pthread_join(threads[i], NULL);
     		  }
-    		  int TotalPixelsq =0;
-    		  int notblackPixelsq =0;
-    		  for (int i=0;i<numT;i++){
-		  TotalPixelsq = +TotalPixelsq+q[i].rows * q[i].cols;
+    		  /*for (int i=0;i<numT;i++){
+		  TotalPixelsq = TotalPixelsq+q[i].rows * q[i].cols;
 		  notblackPixelsq= notblackPixelsq+ countNonZero(q[i]);
-		  }
+		  }*/
 		  double qdensity = (double)notblackPixelsq/(double)TotalPixelsq;
 		
 		  
