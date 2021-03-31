@@ -88,7 +88,6 @@ int main(int argc, char* argv[]){
 		  	cap>>cframe;
 		  	if (cframe.empty())
 		  		break;
-		  	//output << sec<< ","<< qdensity<< endl; //to ease analysis
 		  }
 		  
 		  i++;
