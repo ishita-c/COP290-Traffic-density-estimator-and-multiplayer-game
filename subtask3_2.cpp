@@ -31,7 +31,15 @@ int main(int argc, char* argv[]){
   }
   auto start = high_resolution_clock::now();
   float prmtr1=atof(argv[2]);
+  if (prmtr1<0.0){
+  cout<<"parameter must be >= 0\n";
+  return -1;
+  }
   float prmtr2=atof(argv[3]);
+  if (prmtr2<0.0){
+  cout<<"parameter must be >= 0\n";
+  return -1;
+  }
   Mat fgmask2;
   Mat q;
   ofstream output("output_m2_"+to_string(prmtr1)+"x"+to_string(prmtr2)+".txt");

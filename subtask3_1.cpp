@@ -31,6 +31,10 @@ int main(int argc, char* argv[]){
   }
   auto start = high_resolution_clock::now();
   int prmtr=atoi(argv[2]);
+  if (prmtr<1){
+  cout<<"parameter must be >= 1\n";
+  return -1;
+  }
   Mat fgmask2;
   Mat q;
   ofstream output("output_m1_"+to_string(prmtr)+".txt");

@@ -1,27 +1,25 @@
-default:subtask1.cpp subtask2.cpp
-	g++ subtask1.cpp -o sub1 -Wall `pkg-config --cflags --libs opencv`
-	g++ subtask2.cpp -o sub2 -Wall `pkg-config --cflags --libs opencv`
+FLAGS= -Wall `pkg-config --cflags --libs opencv`
+FLAGST= -pthread -Wall `pkg-config --cflags --libs opencv`
+RM3= sub3 sub3.1 sub3.2 sub3.3 sub3.4
 	
-subtask1: subtask1.cpp
-	g++ subtask1.cpp -o sub1 -Wall `pkg-config --cflags --libs opencv`
-	
-subtask2:
-	g++ subtask2.cpp -o sub2 -Wall `pkg-config --cflags --libs opencv`
-	
-subtask3:subtask3.cpp
-	g++ subtask3.cpp -o sub3 -Wall -pthread `pkg-config --cflags --libs opencv`
+default:subtask3_1.cpp subtask3_2.cpp subtask3_3.cpp subtask3_4.cpp
+	g++ subtask3_1.cpp -o sub3.1 $(FLAGS)
+	g++ subtask3_2.cpp -o sub3.2 $(FLAGS)
+	g++ subtask3_3.cpp -o sub3.3 $(FLAGST)
+	g++ subtask3_4.cpp -o sub3.4 $(FLAGST)
 	
 subtask3.1:subtask3_1.cpp
-	g++ subtask3_1.cpp -o sub3.1 -Wall `pkg-config --cflags --libs opencv`
+	g++ subtask3_1.cpp -o sub3.1 $(FLAGS)
 	
 subtask3.2:subtask3_2.cpp
-	g++ subtask3_2.cpp -o sub3.2 -Wall `pkg-config --cflags --libs opencv`
+	g++ subtask3_2.cpp -o sub3.2 $(FLAGS)
 	
 subtask3.3:subtask3_3.cpp
-	g++ subtask3_3.cpp -o sub3.3 -Wall -pthread `pkg-config --cflags --libs opencv`
+	g++ subtask3_3.cpp -o sub3.3 $(FLAGST)
 	
 subtask3.4:subtask3_4.cpp
-	g++ subtask3_4.cpp -o sub3.4 -Wall -pthread `pkg-config --cflags --libs opencv`
+	g++ subtask3_4.cpp -o sub3.4 $(FLAGST)
+	
 	
 clean:
-	rm sub1 sub2 cropped.jpg transformed.jpg
+	rm $(RM3)

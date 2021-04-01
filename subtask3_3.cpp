@@ -70,6 +70,10 @@ int main(int argc, char* argv[]){
   cout<<"threads can be max 16"<<endl;
   return -1;
   }
+  if (numT<1){
+  cout<<"parameter must be >= 1\n";
+  return -1;
+  }
   auto start = high_resolution_clock::now();
   Mat fgmask[numT];
   Mat croppedImgList[numT]; 
