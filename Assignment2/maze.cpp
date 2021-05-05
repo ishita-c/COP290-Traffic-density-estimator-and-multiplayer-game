@@ -17,8 +17,8 @@ using namespace std;
 
 
 long numin=1;     //Number of cells in the maze.
-const int xsize=40;
-const int ysize=40;
+const int xsize=20;
+const int ysize=20;
 
 cell MAZE[xsize][ysize];
 
@@ -101,8 +101,8 @@ string savebmp(int xspecial, int yspecial){
 	FILE * outfile;
 	int extrabytes, paddedsize;
 	int x, y, n;
-	int h=8;
-	int w=8;
+	int h=16;
+	int w=16;
 	int width=(xsize-1)*2-1;
 	int height=(ysize-1)*2-1;
 
@@ -166,11 +166,11 @@ string savebmp(int xspecial, int yspecial){
 }
 
 
-string maze(){
+string maze(int x,int y){
 	srand((unsigned int)time(NULL)); //seed random number generator with system time
 	initialize();      //initialize the maze
 	generate();
-	return savebmp(0,0);
+	return savebmp(x,y);
 }
 
 
