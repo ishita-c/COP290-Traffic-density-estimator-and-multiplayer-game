@@ -5,9 +5,9 @@
 using namespace std;
 
 
-string maze(void);
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+string maze(int x,int y);
+const int SCREEN_WIDTH = 700;
+const int SCREEN_HEIGHT = 700;
 
 
 //The window we'll be rendering to
@@ -79,8 +79,10 @@ void close()
 	SDL_Quit();
 }
 
-int main(){
-	string s=maze();
+int main(int argc,char * argv[]){
+	int x = (argc > 1) ? stoi(argv[1]) : 0;
+    	int y = (argc > 2) ? stoi(argv[2]) : 0;
+	string s=maze(x,y);
 	//Start up SDL and create window
 	if( !init() )
 	{
