@@ -101,17 +101,19 @@ string savebmp(int xspecial, int yspecial){
 	FILE * outfile;
 	int extrabytes, paddedsize;
 	int x, y, n;
+	int h=8;
+	int w=8;
 	int width=(xsize-1)*2-1;
 	int height=(ysize-1)*2-1;
 
-	extrabytes = (4 - ((width * 3) % 4))%4; 
+	extrabytes = (4 - ((width * w * 3) % 4))%4; 
 
 	char filename[200];
 	
 	sprintf(filename, "%s_%dx%d_n%d.bmp", OUTFILE, xsize, ysize, numin);
-	paddedsize = ((width * 3) + extrabytes) * height;
+	paddedsize = ((width * w * 3) + extrabytes) * height * 2;
 
-	unsigned int headers[13] = {paddedsize + 54, 0, 54, 40, width, height, 0, 0, paddedsize, 0, 0, 0, 0};
+	unsigned int headers[13] = {paddedsize + 54, 0, 54, 40, width * w, height * h, 0, 0, paddedsize, 0, 0, 0, 0};
 
 	outfile = fopen(filename, "wb");
 	fprintf(outfile, "BM");
@@ -135,24 +137,26 @@ string savebmp(int xspecial, int yspecial){
 
 	//Actual writing of data begins here:
 	for(y = 0; y <= height - 1; y++){
+		for (int h1=0;h1<h;h1++){
 		for(x = 0; x <= width - 1; x++){
 			if(x%2 == 1 && y%2 == 1){
-				if(x/2+1 == xspecial && y/2+1 == yspecial) RED;
+				if(x/2+1 == xspecial && y/2+1 == yspecial) {for(int i=0;i<w;i++){RED;}}
 				else{
-					if(MAZE[x/2+1][y/2+1].in) WHITE; else BLACK;
+					if(MAZE[x/2+1][y/2+1].in) {for(int i=0;i<w;i++){WHITE;}} else {for(int i=0;i<w;i++){BLACK;}}
 				}
 			}else if(x%2 == 0 && y%2 == 0){
-				BLACK;
+				{for(int i=0;i<w;i++){BLACK;}}
 			}else if(x%2 == 0 && y%2 == 1){
-				if(MAZE[x/2+1][y/2+1].left) BLACK; else WHITE;
+				if(MAZE[x/2+1][y/2+1].left) {for(int i=0;i<w;i++){BLACK;}} else {for(int i=0;i<w;i++){WHITE;}}
 			}else if(x%2 == 1 && y%2 == 0){
-				if(MAZE[x/2+1][y/2+1].up) BLACK; else WHITE;
+				if(MAZE[x/2+1][y/2+1].up) {for(int i=0;i<w;i++){BLACK;}} else {for(int i=0;i<w;i++){WHITE;}}
 			}
 		}
 		if (extrabytes){     // See above - BMP lines must be of lengths divisible by 4.
 			for (n = 1; n <= extrabytes; n++){
 				fprintf(outfile, "%c", 0);
 			}
+		}
 		}
 	}
 	printf("file printed: %s\n", filename); 
