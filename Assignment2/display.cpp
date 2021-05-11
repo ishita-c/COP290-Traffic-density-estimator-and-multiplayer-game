@@ -4,8 +4,7 @@
 #include <SDL2/SDL.h>
 using namespace std;
 
-
-string maze(int x,int y);
+bool ** maze(int x,int y);
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 700;
 
@@ -82,7 +81,8 @@ void close()
 int main(int argc,char * argv[]){
 	int x = (argc > 1) ? stoi(argv[1]) : 0;
     	int y = (argc > 2) ? stoi(argv[2]) : 0;
-	string s=maze(x,y);
+    	bool  ** Map=maze(x,y);
+	string s="MAZE_20x20_n324.bmp";
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -107,6 +107,12 @@ int main(int argc,char * argv[]){
 			SDL_Delay( 2000 );
 		}
 	}
+	/*for (int j=0;j<5 *16;j++){
+		for (int i=0;i<5 * 16;i++){
+		cout<<Map[i][j]<<",";
+		}
+		cout<<"\n";
+	}*/
 
 	//Free resources and close SDL
 	close();

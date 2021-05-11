@@ -96,13 +96,34 @@ void generate(){
 	}while(numin<(xsize-2)*(ysize-2));
 	return;
 }
-string savebmp(int xspecial, int yspecial){
+
+bool** create2DArray(unsigned height, unsigned width)
+    {
+      bool** array2D = 0;
+      array2D = new bool*[height];
+    
+      for (int h = 0; h < height; h++)
+      {
+            array2D[h] = new bool[width];
+    
+            for (int w = 0; w < width; w++)
+            {
+                  // fill in some initial values
+                  // (filling in zeros would be more logic, but this is just for the example)
+                  array2D[h][w] = false;
+            }
+      }
+    
+      return array2D;
+    }
+
+bool ** savebmp(int xspecial, int yspecial){
 	//save a bitmap file! the xspecial, yspecial pixel is coloured red.
 	FILE * outfile;
 	int extrabytes, paddedsize;
 	int x, y, n;
-	int h=16;
-	int w=16;
+	int h=20;
+	int w=20;
 	int width=(xsize-1)*2-1;
 	int height=(ysize-1)*2-1;
 
@@ -135,26 +156,28 @@ string savebmp(int xspecial, int yspecial){
 	   fprintf(outfile, "%c", (headers[n] & (unsigned int) 0xFF000000) >> 24);
 	}
 
+	bool ** Map= create2DArray(width *w + extrabytes,height * h);
 	//Actual writing of data begins here:
-	for(y = 0; y <= height - 1; y++){
+	for(y = height-1; y >=0; y--){
 		for (int h1=0;h1<h;h1++){
 		for(x = 0; x <= width - 1; x++){
 			if(x%2 == 1 && y%2 == 1){
-				if(x/2+1 == xspecial && y/2+1 == yspecial) {for(int i=0;i<w;i++){RED;}}
+				if(x/2+1 == xspecial && y/2+1 == yspecial) {for(int i=0;i<w;i++){RED;Map[x * w+i][y*h+h1]=true;}}
 				else{
-					if(MAZE[x/2+1][y/2+1].in) {for(int i=0;i<w;i++){WHITE;}} else {for(int i=0;i<w;i++){BLACK;}}
+					if(MAZE[x/2+1][y/2+1].in) {for(int i=0;i<w;i++){WHITE;Map[x * w+i][y*h+h1]=true;}} else {for(int i=0;i<w;i++){BLACK;Map[x * w+i][y*h+h1]=false;}}
 				}
 			}else if(x%2 == 0 && y%2 == 0){
-				{for(int i=0;i<w;i++){BLACK;}}
+				{for(int i=0;i<w;i++){BLACK;Map[x * w+i][y*h+h1]=false;}}
 			}else if(x%2 == 0 && y%2 == 1){
-				if(MAZE[x/2+1][y/2+1].left) {for(int i=0;i<w;i++){BLACK;}} else {for(int i=0;i<w;i++){WHITE;}}
+				if(MAZE[x/2+1][y/2+1].left) {for(int i=0;i<w;i++){BLACK;Map[x * w+i][y*h+h1]=false;}} else {for(int i=0;i<w;i++){WHITE;Map[x * w+i][y*h+h1]=true;}}
 			}else if(x%2 == 1 && y%2 == 0){
-				if(MAZE[x/2+1][y/2+1].up) {for(int i=0;i<w;i++){BLACK;}} else {for(int i=0;i<w;i++){WHITE;}}
+				if(MAZE[x/2+1][y/2+1].up) {for(int i=0;i<w;i++){BLACK;Map[x * w+i][y*h+h1]=false;}} else {for(int i=0;i<w;i++){WHITE;Map[x * w+i][y*h+h1]=true;}}
 			}
 		}
 		if (extrabytes){     // See above - BMP lines must be of lengths divisible by 4.
 			for (n = 1; n <= extrabytes; n++){
 				fprintf(outfile, "%c", 0);
+				Map[width * w + n][y*h+h1]= false;
 			}
 		}
 		}
@@ -162,11 +185,11 @@ string savebmp(int xspecial, int yspecial){
 	printf("file printed: %s\n", filename); 
 	fclose(outfile);
 	string s=filename;
-	return s;
+	return Map;
 }
 
 
-string maze(int x,int y){
+bool ** maze(int x,int y){
 	srand((unsigned int)time(NULL)); //seed random number generator with system time
 	initialize();      //initialize the maze
 	generate();

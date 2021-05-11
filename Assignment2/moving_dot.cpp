@@ -8,8 +8,10 @@ and may not be redistributed without written permission.*/
 #include <string>
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+bool ** maze(int x,int y);
+bool ** Map=maze(1,1);
+const int SCREEN_WIDTH = 37*20;
+const int SCREEN_HEIGHT = 37*20;
 
 //Texture wrapper class
 class LTexture
@@ -249,8 +251,8 @@ int LTexture::getHeight()
 Dot::Dot()
 {
     //Initialize the offsets
-    mPosX = 0;
-    mPosY = 0;
+    mPosX = 21;
+    mPosY = 21;
 
     //Initialize the velocity
     mVelX = 0;
@@ -290,8 +292,9 @@ void Dot::move()
     //Move the dot left or right
     mPosX += mVelX;
 
+
     //If the dot went too far to the left or right
-    if( ( mPosX < 0 ) || ( mPosX + DOT_WIDTH > SCREEN_WIDTH ) )
+    if( ( mPosX < 0 ) || ( mPosX + DOT_WIDTH > SCREEN_WIDTH )|| !Map[mPosX][mPosY] || !Map[mPosX+15][mPosY]||!Map[mPosX][mPosY+15] || !Map[mPosX+15][mPosY+15])
     {
         //Move back
         mPosX -= mVelX;
@@ -301,10 +304,14 @@ void Dot::move()
     mPosY += mVelY;
 
     //If the dot went too far up or down
-    if( ( mPosY < 0 ) || ( mPosY + DOT_HEIGHT > SCREEN_HEIGHT ) )
+    if( ( mPosY < 0 ) || ( mPosY + DOT_HEIGHT > SCREEN_HEIGHT) || !Map[mPosX][mPosY] || !Map[mPosX][mPosY+15] ||!Map[mPosX+15][mPosY] || !Map[mPosX+15][mPosY+15] )
     {
         //Move back
         mPosY -= mVelY;
+    }
+    if ((!Map[mPosX][mPosY] || !Map[mPosX+15][mPosY])&&(!Map[mPosX][mPosY] || !Map[mPosX][mPosY+15])){
+    	mPosX -= mVelX;
+    	mPosY -= mVelY;
     }
 }
 
