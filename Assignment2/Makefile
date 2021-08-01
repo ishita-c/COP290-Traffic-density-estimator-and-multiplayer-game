@@ -1,5 +1,5 @@
 OBJS = $(patsubst code/%.cpp,build/%.o,$(wildcard code/*.cpp))
-LDFLAGS = $(shell sdl2-config --cflags --libs) -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lm
+LDFLAGS = $(shell sdl2-config --cflags --libs) -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lm -lenet
 DEPENDS = $(OBJS:.o=.d)
 
 .SUFFIXES: .cpp .o
