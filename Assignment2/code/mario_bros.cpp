@@ -284,7 +284,7 @@ void Mario::game_start() noexcept {
     p1_->set_power_mode(0);
     p2_->set_power_mode(0);
   }
-  if(game_state_==game_state::playing)createClient();
+  if(game_state_==game_state::playing && game_mode_==game_mode::battle)createClient();
 }
 
 
@@ -495,7 +495,7 @@ void Mario::play_game() noexcept {
     debug_lose_enemy_ = !debug_lose_enemy_;
   }
   }
-  if (game_state_!=game_state::playing){closeClient();waiting=false;}
+  if (game_state_!=game_state::playing && game_mode_==game_mode::battle){closeClient();waiting=false;}
   }
 }
 
