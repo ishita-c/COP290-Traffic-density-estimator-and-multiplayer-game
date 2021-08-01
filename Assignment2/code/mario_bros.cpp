@@ -1,5 +1,6 @@
 #include "mario_bros.hpp"
 #include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_image.h>
 #include <time.h>
 #include <sstream>
 #include "global_dec.hpp"
@@ -13,18 +14,30 @@
 #include "mario.hpp"
 #include "wipe.hpp"
 
+
+
+
 void Mario::game_title() noexcept {
-  SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
-  SDL_RenderClear(renderer_);
+  if (IMG_Init(IMG_INIT_PNG)!=IMG_INIT_PNG){
+    std::cerr<<"Failed to initialize SDL_image";
+    abort;
+  }
+  SDL_Surface * image;
+  
+  //SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
+  //SDL_RenderClear(renderer_);
 
   const Point title_pos = Point{220, 160};
   const Point p1_mode_pos = Point{270, 300};
   const Point vs_mode_pos = Point{270, 350};
-  const char *title_str = "Super Mario Bros. In A Maze";
+  const Point hp_mode_pos = Point{100, 250};
+  const char *title_str = " ";
   const char *p1_mode_str = "Play as Mario";
   const char *vs_mode_str = "Play with Luigi";
+  const char *hp_mode_str="don't know how to play press H";
   const SDL_Rect p1_str_dst = {250, 298, 250, 26};
   const SDL_Rect vs_str_dst = {250, 348, 250, 26};
+  const SDL_Rect hp_str_dst = {250, 398, 250, 26};
   switch (game_count_) {
     case 0: {
       wipe_->set_wipe_in();
@@ -41,6 +54,13 @@ void Mario::game_title() noexcept {
       break;
     }
     case 2: {
+      SDL_Surface * image=IMG_Load("resources/graphics/mario-intro.png");
+  	if (image==NULL){
+  		std::cerr<<"unable to load image";
+  	}
+  	SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  	SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  	SDL_RenderPresent(renderer_);
       draw_text(font_size::x36, rgb::black, title_pos, title_str);
       if (blink_count_ < 30) {
         draw_text(font_size::x16, rgb::black, Point{205, 300},
@@ -54,7 +74,8 @@ void Mario::game_title() noexcept {
 
       if (input_manager_->edge_key_p(player_type::p1, input_device::x)
           || input_manager_->edge_key_p(player_type::p2, input_device::x)
-          || input_manager_->edge_key_p(player_type::p1, input_device::space)) {
+          || input_manager_->edge_key_p(player_type::p1, input_device::space)
+          || input_manager_->edge_key_p(player_type::p2, input_device::space)) {
         ++game_count_;
         blink_count_ = 0;
       }
@@ -64,7 +85,8 @@ void Mario::game_title() noexcept {
       draw_text(font_size::x36, rgb::black, title_pos, title_str);
       if (!input_manager_->press_key_p(player_type::p1, input_device::x)
           && !input_manager_->press_key_p(player_type::p2, input_device::x)
-          && !input_manager_->press_key_p(player_type::p1, input_device::space)) {
+          && !input_manager_->press_key_p(player_type::p1, input_device::space)
+          && !input_manager_->press_key_p(player_type::p2, input_device::space)) {
         ++game_count_;
       }
       break;
@@ -74,24 +96,65 @@ void Mario::game_title() noexcept {
 
       switch (game_mode_) {
         case game_mode::single: {
+          image=IMG_Load("resources/graphics/mario-intro.png");
+          if (image==NULL){
+  		std::cerr<<"unable to load image";
+  	  }
+  	  SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  	  SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  	  SDL_RenderPresent(renderer_);
           SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
           SDL_RenderFillRect(renderer_, &p1_str_dst);
           draw_text(font_size::x16, rgb::white, p1_mode_pos, p1_mode_str);
           draw_text(font_size::x16, rgb::black, vs_mode_pos, vs_mode_str);
+          draw_text(font_size::x16, rgb::black, hp_mode_pos, hp_mode_str);
           break;
         }
         case game_mode::battle: {
+          image=IMG_Load("resources/graphics/mario-intro.png");
+          if (image==NULL){
+  		std::cerr<<"unable to load image";
+  	  }
+  	  SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  	  SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  	  SDL_RenderPresent(renderer_);
           SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
           SDL_RenderFillRect(renderer_, &vs_str_dst);
           draw_text(font_size::x16, rgb::black, p1_mode_pos, p1_mode_str);
           draw_text(font_size::x16, rgb::white, vs_mode_pos, vs_mode_str);
+          draw_text(font_size::x16, rgb::black, hp_mode_pos, hp_mode_str);
           break;
         }
+        case game_mode::help: {
+        	image=IMG_Load("resources/graphics/mario-instruc.png");
+        	if (image==NULL){
+  			std::cerr<<"unable to load image";
+  		}
+  		SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  		SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  		SDL_RenderPresent(renderer_);
+          	break;
+          }
       }
+      if (input_manager_->press_key_p(player_type::p1, input_device::h)
+      	  || input_manager_->press_key_p(player_type::p2, input_device::h)){
+      	  if (game_mode_!=game_mode::help){
+      	  	//++game_count_;
+      	  	game_mode_=game_mode::help;
+      	  }
+      	  }
+      if (input_manager_->press_key_p(player_type::p1, input_device::q)
+      	  || input_manager_->press_key_p(player_type::p2, input_device::q)){
+      	  if (game_mode_==game_mode::help){
+      	  	//++game_count_;
+      	  	game_mode_=game_mode::single;
+      	  }
+      	  }
 
       if (input_manager_->press_key_p(player_type::p1, input_device::x)
           || input_manager_->press_key_p(player_type::p2, input_device::x)
-          || input_manager_->press_key_p(player_type::p1, input_device::space)) {
+          || input_manager_->press_key_p(player_type::p1, input_device::space)
+          || input_manager_->press_key_p(player_type::p2, input_device::space)) {
         wipe_->set_wipe_out();
         wipe_->draw(screen::width);
         ++game_count_;
@@ -120,6 +183,7 @@ void Mario::game_title() noexcept {
           SDL_RenderFillRect(renderer_, &p1_str_dst);
           draw_text(font_size::x16, rgb::white, p1_mode_pos, p1_mode_str);
           draw_text(font_size::x16, rgb::black, vs_mode_pos, vs_mode_str);
+          draw_text(font_size::x16, rgb::black, hp_mode_pos, hp_mode_str);
           break;
         }
         case game_mode::battle: {
@@ -127,6 +191,15 @@ void Mario::game_title() noexcept {
           SDL_RenderFillRect(renderer_, &vs_str_dst);
           draw_text(font_size::x16, rgb::black, p1_mode_pos, p1_mode_str);
           draw_text(font_size::x16, rgb::white, vs_mode_pos, vs_mode_str);
+          draw_text(font_size::x16, rgb::black, hp_mode_pos, hp_mode_str);
+          break;
+        }
+        case game_mode::help: {
+          SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+          SDL_RenderFillRect(renderer_, &vs_str_dst);
+          draw_text(font_size::x16, rgb::black, p1_mode_pos, p1_mode_str);
+          draw_text(font_size::x16, rgb::black, vs_mode_pos, vs_mode_str);
+          draw_text(font_size::x16, rgb::white, hp_mode_pos, hp_mode_str);
           break;
         }
       }
@@ -163,6 +236,7 @@ void Mario::game_title() noexcept {
       // NOTREACHED
       break;
   }
+  IMG_Quit();
 }
 
 void Mario::game_start() noexcept {
@@ -210,9 +284,92 @@ void Mario::game_start() noexcept {
     p1_->set_power_mode(0);
     p2_->set_power_mode(0);
   }
+  if(game_state_==game_state::playing)createClient();
 }
 
+
+void Mario::sendPacket(ENetPeer* server){
+	char c[80];
+	sprintf(c,"%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i",
+		p1_->get_pos().x,
+		p1_->get_pos().y,
+		p1_->get_block().x,
+		p1_->get_block().y,
+		p1_->getnext_block().x,
+		p1_->getnext_block().y,
+		p1_->get_dir(),
+		p1_->get_life(),
+		p1_->get_score(),
+		p1_->get_damaged(),
+		p1_->get_power_mode(),
+		p1_->get_anim(),
+		p1_->get_animw());
+		
+	ENetPacket * packet = enet_packet_create (c, 
+                                          strlen (c) + 1, 
+                                          ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send (server, 0, packet);
+}
+
+void Mario::setP2(ENetEvent event){
+	/*printf("A packet of length %lu containing %s was received from %p on channel %u.\n",
+                        event.packet->dataLength,
+                        event.packet->data,
+                        event.peer->data,
+                        event.channelID);*/
+	char* str;
+	cout<<event.packet->data<<"\n";
+	//int l=event.packet->dataLength;
+	//sprintf(str,"%s",event.packet->data);
+	//string s(str);
+	//cout<<str<<"\n";
+	int l=event.packet->dataLength;
+	int i=0;
+	int j=0;
+	int n=0;
+	int arr[13];
+	string s="";
+	while(i<l-1 && n<13){
+		if (event.packet->data[i]==','){
+			arr[n]=stoi(s);
+			n++;
+			j=i+1;
+			s="";
+			i++;
+		}
+		s=s+char(event.packet->data[i]);
+		i++;
+	}
+	i=0;
+	arr[12]=stoi(s);
+	Point* p= new Point();
+	p->setx(arr[0]);
+	p->sety(arr[1]);
+	Point pp=*p;
+	p2_->set_pos(pp);
+	p= new Point();
+	p->setx(arr[2]);
+	p->sety(arr[3]);
+	pp=*p;
+	p2_->set_block(pp);
+	p= new Point();
+	p->setx(arr[4]);
+	p->sety(arr[5]);
+	pp=*p;
+	p2_->setnext_block(pp);
+	p2_->set_dir(arr[6]);
+	p2_->set_life(arr[7]);
+	p2_->set_score(arr[8]);
+	p2_->set_damaged(arr[9]);
+	p2_->set_power_mode(arr[10]);
+	p2_->set_anim(arr[11]);
+	p2_->set_animw(arr[12]);
+	
+}
+
+
 void Mario::play_game() noexcept {
+  if (game_mode_==game_mode::single){
   map_->draw(game_level_);
   food_->draw();
   enemy_->draw();
@@ -244,6 +401,101 @@ void Mario::play_game() noexcept {
 
   if (input_manager_->edge_key_p(player_type::p1, input_device::b)) {
     debug_lose_enemy_ = !debug_lose_enemy_;
+  }
+  }
+  else{
+  
+  ENetEvent event;
+  if (!waiting){
+  while (enet_host_service(Mario::client, & event, 0) > 0) {
+        switch (event.type) {
+            case ENET_EVENT_TYPE_RECEIVE:{
+                        //int l=event.packet->dataLength;
+                        //enet_uint8* c=event.packet->data;
+                        if (event.packet->dataLength<=2){
+                        	waiting=false;
+                        	//enet_packet_destroy(event.packet);
+                        }
+                        else{
+                        waiting=true;
+                        //setP2(event);
+                        //enet_packet_destroy(event.packet);
+                        }
+                        //sendPacket(event.peer);
+                        /*printf("A packet of length %lu containing %s was received from %p on channel %u.\n",
+                        event.packet->dataLength,
+                        event.packet->data,
+                        event.peer->data,
+                        event.channelID);*/
+                /* Clean up the packet now that we're done using it. */
+                break;
+                }
+        }
+        
+   }
+  }
+  if (waiting){ 
+  map_->draw(game_level_);
+  food_->draw();
+  enemy_->draw();
+  p1_->draw(game_mode_);
+  p2_->draw(game_mode_);
+  draw_score();
+  enemy_->move(debug_lose_enemy_, *map_, *p1_, *p2_);
+  sendPacket(peer);
+  while (enet_host_service(Mario::client, & event, 0) > 0) {
+        switch (event.type) {
+            case ENET_EVENT_TYPE_RECEIVE:{
+                        //int l=event.packet->dataLength;
+                        //enet_uint8* c=event.packet->data;
+                        if (event.packet->dataLength<=2){
+                        	waiting=false;
+                        	enet_packet_destroy(event.packet);
+                        }
+                        else{
+                        waiting=true;
+                        setP2(event);
+                        enet_packet_destroy(event.packet);
+                        }
+                        //sendPacket(event.peer);
+                        /*printf("A packet of length %lu containing %s was received from %p on channel %u.\n",
+                        event.packet->dataLength,
+                        event.packet->data,
+                        event.peer->data,
+                        event.channelID);*/
+                /* Clean up the packet now that we're done using it. */
+                break;
+                }
+        }
+        
+   }
+  p1_->move(*map_, game_mode_);
+  p2_->move(*map_, game_mode_);
+  if (p1_->get_power_mode()) {
+    p1_->set_power_mode(p1_->get_power_mode() - 1);
+  }
+  /*if (p2_->get_power_mode()) {
+    p2_->set_power_mode(p2_->get_power_mode() - 1);
+  }*/
+
+  const bool food_state =
+      food_->check_state(game_mode_, *p1_, *p2_);
+  const bool hit_enemy = enemy_->check_hit_enemy(game_mode_, *p1_, *p2_);
+  if (food_state) {
+    game_state_ = game_state::clear;
+  } else if (hit_enemy) {
+    game_state_ = game_state::miss;
+  }
+
+  if (input_manager_->edge_key_p(player_type::p1, input_device::space)) {
+    game_state_ = game_state::pause;
+  }
+
+  if (input_manager_->edge_key_p(player_type::p1, input_device::b)) {
+    debug_lose_enemy_ = !debug_lose_enemy_;
+  }
+  }
+  if (game_state_!=game_state::playing){closeClient();waiting=false;}
   }
 }
 
@@ -329,13 +581,13 @@ void Mario::game_miss() noexcept {
 }
 
 void Mario::game_over() noexcept {
-  SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
-  SDL_RenderClear(renderer_);
 
   const Point gameover_pos = Point{165, 100};
   const char *gameover_str = "Game Over!";
   switch (game_mode_) {
     case game_mode::single: {
+      SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
+      SDL_RenderClear(renderer_);
       switch (game_count_) {
         case 0: {
           draw_text(font_size::x36, rgb::red, gameover_pos, gameover_str);
@@ -395,6 +647,8 @@ void Mario::game_over() noexcept {
       break;
     }
     case game_mode::battle: {
+      SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
+      SDL_RenderClear(renderer_);
       switch (game_count_) {
         case 0: {
           draw_text(font_size::x36, rgb::red, gameover_pos, gameover_str);
@@ -416,17 +670,33 @@ void Mario::game_over() noexcept {
           std::stringstream ss;
           const unsigned int p1_score = p1_->get_score();
           const unsigned int p2_score = p2_->get_score();
-          if (p1_score > p2_score) {
+          const unsigned int l1 = p1_->get_life();
+          const unsigned int l2 = p2_->get_life();
+          if (l1>l2 ||(l1==l2 && p1_score > p2_score)) {
+            SDL_Surface * image=IMG_Load("resources/graphics/mario-win.png");
+            if (image==NULL){
+  			std::cerr<<"unable to load image";
+  		}
+  		SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  		SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  		SDL_RenderPresent(renderer_);
             ss << "Mario wins with a Score of " << p1_score;
-            draw_text(font_size::x36, rgb::black, Point{170, 240},
+            draw_text(font_size::x36, rgb::black, Point{170, 0},
                       ss.str().c_str());
-          } else if (p1_score < p2_score) {
+          } else if (l1<l2 || (l1==l2 && p1_score < p2_score)) {
+            SDL_Surface * image=IMG_Load("resources/graphics/mario-lost.png");
+            if (image==NULL){
+  			std::cerr<<"unable to load image";
+  		}
+  		SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  		SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  		SDL_RenderPresent(renderer_);
             ss << "Luigi wins with a Score of " << p2_score;
-            draw_text(font_size::x36, rgb::black, Point{170, 240},
+            draw_text(font_size::x36, rgb::black, Point{170, 0},
                       ss.str().c_str());
           } else {
             ss << "It's a Draw! Score is " << p1_score;
-            draw_text(font_size::x36, rgb::black, Point{170, 240},
+            draw_text(font_size::x36, rgb::black, Point{170, 0},
                       ss.str().c_str());
           }
 

@@ -13,6 +13,15 @@
 #include "sounds.hpp"
 #include "mario.hpp"
 #include "wipe.hpp"
+#include <cstring>
+#include <stdio.h>
+#include <string>
+#include <iostream>
+//#define ENET_IMPLEMENTATION
+#include <enet/enet.h>
+#include<unistd.h>
+
+using namespace std;
 
 struct RGB {
   Uint8 r;
@@ -35,6 +44,7 @@ class Mario {
     playing,
     gameover,
     pause,
+    //waiting,
   };
 
   const bool fullscreen_mode_;
@@ -59,6 +69,7 @@ class Mario {
   std::unique_ptr<Player> p1_;
   std::unique_ptr<Player> p2_;
   FontManager font_manager_;
+  bool waiting;
 
   void game_title() noexcept;
   void game_start() noexcept;
@@ -66,6 +77,13 @@ class Mario {
   void game_clear() noexcept;
   void game_miss() noexcept;
   void game_over() noexcept;
+  void sendPacket(ENetPeer* server);
+  void setP2(ENetEvent event);
+  
+  ENetHost* client = { 0 };
+  ENetAddress address ;
+  ENetEvent event ;
+  ENetPeer* peer = { 0 };
 
   inline void game_pause() noexcept {
     map_->draw(game_level_);
@@ -331,8 +349,77 @@ class Mario {
 
     SDL_ShowCursor(SDL_DISABLE);
   }
+  void createClient(){
+  if (enet_initialize() != 0) {
+    fprintf(stderr, "An error occurred while initializing ENet.\n");
+    exit(EXIT_FAILURE);
+  }
+  client = enet_host_create(NULL /* create a client host */,
+    1 /* only allow 1 outgoing connection */,
+    2 /* allow up 2 channels to be used, 0 and 1 */,
+    0 /* assume any amount of incoming bandwidth */,
+    0 /* assume any amount of outgoing bandwidth */);
+  if (client == NULL) {
+    fprintf(stderr,
+      "An error occurred while trying to create an ENet client host.\n");
+    exit(EXIT_FAILURE);
+  }
+  /* Connect to some.server.net:1234. */
+  enet_address_set_host(&address, "127.0.0.1");
+  address.port = 7778;
+  /* Initiate the connection, allocating the two channels 0 and 1. */
+  peer = enet_host_connect(client, &address, 2, 0);
+  if (peer == NULL) {
+    fprintf(stderr,
+      "No available peers for initiating an ENet connection.\n");
+    exit(EXIT_FAILURE);
+  }
+  /* Wait up to 5 seconds for the connection attempt to succeed. */
+  if (enet_host_service(client, &event, 5000) > 0 &&
+    event.type == ENET_EVENT_TYPE_CONNECT) {
+    puts("Connection to some.server.net:1234 succeeded.");
+  } else {
+    /* Either the 5 seconds are up or a disconnect event was */
+    /* received. Reset the peer in the event the 5 seconds   */
+    /* had run out without any significant event.            */
+    enet_peer_reset(peer);
+    puts("Connection to some.server.net:1234 failed.");
+  }
+  }
+  
+  
+  void closeClient(){
+  enet_peer_disconnect(peer, 0);
+
+  uint8_t disconnected = false;
+  /* Allow up to 3 seconds for the disconnect to succeed
+   * and drop any packets received packets.
+   */
+  while (enet_host_service(client, &event, 1000) > 0) {
+      switch (event.type) {
+      case ENET_EVENT_TYPE_RECEIVE:
+          enet_packet_destroy(event.packet);
+          break;
+      case ENET_EVENT_TYPE_DISCONNECT:
+          puts("Disconnection succeeded.");
+          disconnected = true;
+          break;
+      }
+  }
+
+  // Drop connection, since disconnection didn't successed
+  if (!disconnected) {
+      enet_peer_reset(peer);
+  }
+
+  enet_host_destroy(client);
+  enet_deinitialize();
+  }
 
   inline void run() noexcept {
+    int i=0;
+    //unsigned int microsecond = 1000;
+    waiting=false;
     for (;;) {
       input_manager_->update(debug_mode_);
       switch (game_state_) {
@@ -343,6 +430,8 @@ class Mario {
           game_start();
           break;
         case game_state::playing:
+          srand(i);
+          //i++;
           play_game();
           break;
         case game_state::clear:
@@ -358,6 +447,7 @@ class Mario {
           game_pause();
           break;
       }
+      //usleep(3 * microsecond);
       if (!poll_event()) {
         return;
       }

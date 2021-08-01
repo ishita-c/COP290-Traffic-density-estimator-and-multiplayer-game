@@ -28,6 +28,7 @@ enum {
 enum class game_mode {
   single,
   battle,
+  help,
 };
 
 struct Point {
@@ -56,4 +57,11 @@ struct Point {
     return static_cast<unsigned int>(
         hypot(static_cast<double>(x - rhs.x), static_cast<double>(y - rhs.y)));
   }
+  void setx(int i){
+  x=i;
+  }
+  void sety(int i){
+  y=i;
+  }
+  
 };

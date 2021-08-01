@@ -48,10 +48,10 @@ class Player {
         return;
       }
       case player_type::p2: {
-        pos_ = {block::size * 14, block::size * 18};
-        block_ = {14, 18};
-        next_block_ = {14, 18};
-        dir_ = 3;
+        pos_ = {block::size * 9, block::size * 18};
+        block_ = {9, 18};
+        next_block_ = {9, 18};
+        dir_ = 1;
         anime_count_ = 0;
         anime_weight_ = 0;
         return;
@@ -96,10 +96,10 @@ class Player {
   }
 
   inline void move(const Map &map, const game_mode mode) noexcept {
-    if (type_ == player_type::p2 && mode != game_mode::battle) {
-      return;
-    }
-
+	if (type_ == player_type::p2 && mode != game_mode::battle) {
+	return;
+	}
+	
     const Point dst_pos = {next_block_.x * block::size,
                            next_block_.y * block::size};
     if (pos_.x != dst_pos.x || pos_.y != dst_pos.y) {
@@ -172,6 +172,8 @@ class Player {
       next_block_.x = -1;
       pos_.x = block::size * next_block_.x;
     }
+    
+    return ;
   }
 
   inline Point get_pos() const noexcept { return pos_; }
@@ -180,10 +182,20 @@ class Player {
   inline void set_pos(const Point &&p) noexcept { pos_ = p; }
 
   inline Point get_block() const noexcept { return block_; }
+  inline void set_block(const Point &b) noexcept {  block_=b; }
+  inline void set_block(const Point &&b) noexcept {  block_=b; }
+  inline Point getnext_block() const noexcept { return next_block_; }
+  inline void setnext_block(const Point &b) noexcept {  next_block_=b; }
 
   inline int get_life() const noexcept { return life_; }
+  inline int get_dir() const noexcept { return dir_; }
+  inline int get_anim() const noexcept { return anime_count_; }
+  inline int get_animw() const noexcept { return anime_weight_; }
 
   inline void set_life(const int life) noexcept { life_ = life; }
+  inline void set_dir(const int dir) noexcept { dir_ = dir; }
+  inline void set_anim(unsigned char anime_count) noexcept { anime_count_=anime_count; }
+  inline void set_animw(unsigned char anime_weight) noexcept { anime_weight_=anime_weight; }
 
   inline unsigned int get_score() const noexcept { return score_; }
 
