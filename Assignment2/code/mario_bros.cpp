@@ -27,17 +27,17 @@ void Mario::game_title() noexcept {
   //SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
   //SDL_RenderClear(renderer_);
 
-  const Point title_pos = Point{220, 160};
-  const Point p1_mode_pos = Point{270, 300};
-  const Point vs_mode_pos = Point{270, 350};
-  const Point hp_mode_pos = Point{100, 250};
+  const Point title_pos = Point{230, 160};
+  const Point p1_mode_pos = Point{250, 300};
+  const Point vs_mode_pos = Point{250, 350};
+  const Point hp_mode_pos = Point{120, 250};
   const char *title_str = " ";
   const char *p1_mode_str = "Play as Mario";
   const char *vs_mode_str = "Play with Luigi";
-  const char *hp_mode_str="don't know how to play press H";
-  const SDL_Rect p1_str_dst = {250, 298, 250, 26};
-  const SDL_Rect vs_str_dst = {250, 348, 250, 26};
-  const SDL_Rect hp_str_dst = {250, 398, 250, 26};
+  const char *hp_mode_str="Press H for How To Play";
+  const SDL_Rect p1_str_dst = {230, 298, 260, 26};
+  const SDL_Rect vs_str_dst = {230, 348, 260, 26};
+  const SDL_Rect hp_str_dst = {230, 398, 260, 26};
   switch (game_count_) {
     case 0: {
       wipe_->set_wipe_in();
@@ -63,7 +63,7 @@ void Mario::game_title() noexcept {
   	SDL_RenderPresent(renderer_);
       draw_text(font_size::x36, rgb::black, title_pos, title_str);
       if (blink_count_ < 30) {
-        draw_text(font_size::x16, rgb::black, Point{205, 300},
+        draw_text(font_size::x16, rgb::white, Point{130, 300},
                   "Press SPACE key for Menu");
         ++blink_count_;
       } else if (blink_count_ < 60) {
@@ -273,9 +273,9 @@ void Mario::game_start() noexcept {
   if (game_count_ < 130) {
     std::stringstream ss;
     ss << "LEVEL " << game_level_;
-    draw_text(font_size::x36, rgb::red, Point{153, 170}, ss.str().c_str());
+    draw_text(font_size::x36, rgb::red, Point{190, 190}, ss.str().c_str());
   } else if (game_count_ < 200) {
-    draw_text(font_size::x36, rgb::red, Point{165, 170}, "START!");
+    draw_text(font_size::x36, rgb::red, Point{190, 190}, "START!");
   }
 
   if (game_count_ > 220) {
@@ -592,7 +592,7 @@ void Mario::game_miss() noexcept {
 
 void Mario::game_over() noexcept {
 
-  const Point gameover_pos = Point{165, 100};
+  const Point gameover_pos = Point{200, 100};
   const char *gameover_str = "Game Over!";
   switch (game_mode_) {
     case game_mode::single: {
@@ -625,11 +625,11 @@ void Mario::game_over() noexcept {
           draw_text(font_size::x36, rgb::red, gameover_pos, gameover_str);
           std::stringstream ss;
           ss << "Your Score is " << p1_->get_score();
-          draw_text(font_size::x36, rgb::black, Point{120, 220},
+          draw_text(font_size::x36, rgb::black, Point{170, 220},
                     ss.str().c_str());
 
           if (blink_count_ < 30) {
-            draw_text(font_size::x16, rgb::black, Point{210, 350},
+            draw_text(font_size::x16, rgb::white, Point{130, 350},
                       "Press SPACE key for Menu");
             ++blink_count_;
           } else if (blink_count_ < 60) {
@@ -719,7 +719,7 @@ void Mario::game_over() noexcept {
           }
 
           if (blink_count_ < 30) {
-            draw_text(font_size::x16, rgb::black, Point{210, 380},
+            draw_text(font_size::x16, rgb::white, Point{130, 380},
                       "Press SPACE key for Menu");
             ++blink_count_;
           } else if (blink_count_ < 60) {
