@@ -407,6 +407,13 @@ void Mario::play_game() noexcept {
   
   ENetEvent event;
   if (!waiting){
+  SDL_Surface * image=IMG_Load("resources/graphics/connec-lost.png");
+  if (image==NULL){
+  std::cerr<<"unable to load image";
+  }
+  SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  SDL_RenderPresent(renderer_);
   while (enet_host_service(Mario::client, & event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:{
@@ -415,7 +422,8 @@ void Mario::play_game() noexcept {
                         if (event.packet->dataLength<=2){
                         	waiting=false;
                         	//enet_packet_destroy(event.packet);
-                        }
+                        	}
+                        	
                         else{
                         waiting=true;
                         //setP2(event);
@@ -487,9 +495,9 @@ void Mario::play_game() noexcept {
     game_state_ = game_state::miss;
   }
 
-  if (input_manager_->edge_key_p(player_type::p1, input_device::space)) {
+  /*if (input_manager_->edge_key_p(player_type::p1, input_device::space)) {
     game_state_ = game_state::pause;
-  }
+  }*/
 
   if (input_manager_->edge_key_p(player_type::p1, input_device::b)) {
     debug_lose_enemy_ = !debug_lose_enemy_;
