@@ -23,9 +23,12 @@ For single Player:
 
 For Multiplayer:
 Run the folowing in a new terminal
+
 > g++ -o server enet_server.cpp -lenet
 >./server
+
 Open two terminals and run:
+
 >make
 >./mario-bros
 
