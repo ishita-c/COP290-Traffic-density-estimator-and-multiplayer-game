@@ -404,7 +404,6 @@ void Mario::play_game() noexcept {
   }
   }
   else{
-  
   ENetEvent event;
   if (!waiting){
   SDL_Surface * image=IMG_Load("resources/graphics/connec-lost.png");
@@ -414,6 +413,9 @@ void Mario::play_game() noexcept {
   SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
   SDL_RenderCopy(renderer_, texture, NULL, NULL);
   SDL_RenderPresent(renderer_);
+  if (input_manager_->edge_key_p(player_type::p1, input_device::space)) {
+    game_state_ = game_state::title;
+  }
   while (enet_host_service(Mario::client, & event, 0) > 0) {
         switch (event.type) {
             case ENET_EVENT_TYPE_RECEIVE:{
@@ -421,13 +423,13 @@ void Mario::play_game() noexcept {
                         //enet_uint8* c=event.packet->data;
                         if (event.packet->dataLength<=2){
                         	waiting=false;
-                        	//enet_packet_destroy(event.packet);
+                        	enet_packet_destroy(event.packet);
                         	}
                         	
                         else{
                         waiting=true;
                         //setP2(event);
-                        //enet_packet_destroy(event.packet);
+                        enet_packet_destroy(event.packet);
                         }
                         //sendPacket(event.peer);
                         /*printf("A packet of length %lu containing %s was received from %p on channel %u.\n",
@@ -594,8 +596,8 @@ void Mario::game_over() noexcept {
   const char *gameover_str = "Game Over!";
   switch (game_mode_) {
     case game_mode::single: {
-      SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
-      SDL_RenderClear(renderer_);
+      //SDL_SetRenderDrawColor(renderer_, 18, 187, 224, 0);
+      //SDL_RenderClear(renderer_);
       switch (game_count_) {
         case 0: {
           draw_text(font_size::x36, rgb::red, gameover_pos, gameover_str);
@@ -613,6 +615,13 @@ void Mario::game_over() noexcept {
           break;
         }
         case 2: {
+          SDL_Surface * image=IMG_Load("resources/graphics/mario-lost.png");
+            if (image==NULL){
+  			std::cerr<<"unable to load image";
+  		}
+  		SDL_Texture * texture=SDL_CreateTextureFromSurface(renderer_,image);
+  		SDL_RenderCopy(renderer_, texture, NULL, NULL);
+  		SDL_RenderPresent(renderer_);
           draw_text(font_size::x36, rgb::red, gameover_pos, gameover_str);
           std::stringstream ss;
           ss << "Your Score is " << p1_->get_score();
@@ -674,6 +683,7 @@ void Mario::game_over() noexcept {
           break;
         }
         case 2: {
+          
           draw_text(font_size::x36, rgb::red, gameover_pos, gameover_str);
           std::stringstream ss;
           const unsigned int p1_score = p1_->get_score();
