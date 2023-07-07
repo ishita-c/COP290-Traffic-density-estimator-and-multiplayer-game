@@ -35,3 +35,5 @@ Cleaning up:
 
 $make clean 
 This command deletes the executables and other outputs.
+
+Link to traffic video: https://drive.google.com/file/d/1znTm2C3667LW4itDSKqxg7ojiKiqmWM7/view?usp=sharing
